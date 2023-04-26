@@ -4,26 +4,46 @@ import hello.itemservice.repository.ItemRepository;
 import hello.itemservice.repository.ItemSearchCond;
 import hello.itemservice.repository.ItemUpdateDto;
 import hello.itemservice.repository.memory.MemoryItemRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@Slf4j
 class ItemRepositoryTest {
+
+    //DataSource와 tx관련 빈들은 스프링부트가 자동으로 등록해줌
+    @Autowired
+    PlatformTransactionManager transactionManager;
+
+    TransactionStatus status;
 
     @Autowired
     ItemRepository itemRepository;
 
+    @BeforeEach
+    void beforeEach() {
+        status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        //커넥션을 DataSourceUilts.getConnection()처럼 가져오나봄
+    }
+
     @AfterEach
     void afterEach() {
-        //MemoryItemRepository 의 경우 제한적으로 사용
         if (itemRepository instanceof MemoryItemRepository) {
-            ((MemoryItemRepository) itemRepository).clearStore();
+            itemRepository.deleteAll();
+        } else {
+            transactionManager.rollback(status);
         }
     }
 
@@ -35,6 +55,8 @@ class ItemRepositoryTest {
         //when
         Item savedItem = itemRepository.save(item);
 
+        //트랜잭션 적용일때 위에서 한 save를 아래의 find에서 찾을 수 있는 이유
+        //트랜잭션 커밋을 안해도 같은 DB세션에선 임시상태의 조회가 가능하다
         //then
         Item findItem = itemRepository.findById(item.getId()).get();
         assertThat(findItem).isEqualTo(savedItem);

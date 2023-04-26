@@ -13,7 +13,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @RequiredArgsConstructor
-public class JdbcTemplateV1Config {
+public class JdbcTemplateV2Config {
 
     private final DataSource dataSource;
 
@@ -24,6 +24,6 @@ public class JdbcTemplateV1Config {
 
     @Bean
     public ItemRepository itemRepository() {
-        return new JdbcTemplateItemRepositoryV1(dataSource);
+        return new JdbcTemplateItemRepositoryV2(dataSource);
     }
 }
