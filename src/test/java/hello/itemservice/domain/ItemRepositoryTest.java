@@ -10,14 +10,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Transactional
 @SpringBootTest
 @Slf4j
 class ItemRepositoryTest {
@@ -30,22 +34,6 @@ class ItemRepositoryTest {
 
     @Autowired
     ItemRepository itemRepository;
-
-    @BeforeEach
-    void beforeEach() {
-        status = transactionManager.getTransaction(new DefaultTransactionDefinition());
-
-        //커넥션을 DataSourceUilts.getConnection()처럼 가져오나봄
-    }
-
-    @AfterEach
-    void afterEach() {
-        if (itemRepository instanceof MemoryItemRepository) {
-            itemRepository.deleteAll();
-        } else {
-            transactionManager.rollback(status);
-        }
-    }
 
     @Test
     void save() {
