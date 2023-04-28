@@ -5,6 +5,7 @@ import hello.itemservice.repository.ItemSearchCond;
 import hello.itemservice.repository.ItemUpdateDto;
 import hello.itemservice.repository.memory.MemoryItemRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -99,4 +101,11 @@ class ItemRepositoryTest {
         List<Item> result = itemRepository.findAll(new ItemSearchCond(itemName, maxPrice));
         assertThat(result).containsExactly(items);
     }
+
+//    @Test
+//    @Commit
+//    void deleteAll() {
+//        itemRepository.deleteAll();
+//        Assertions.assertThat(itemRepository.findAll(null).size()).isEqualTo(0);
+//    }
 }

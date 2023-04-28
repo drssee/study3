@@ -13,7 +13,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 
 
-@Import(JdbcTemplateV3Config.class)
+@Import(MyBatisConfig.class)
 @SpringBootApplication(scanBasePackages = "hello.itemservice.web")
 @Slf4j
 public class ItemServiceApplication {
