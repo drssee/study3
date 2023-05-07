@@ -1,7 +1,6 @@
 package hello.itemservice.config;
 
 import hello.itemservice.repository.ItemRepository;
-import hello.itemservice.repository.jpa.JpaItemRepository;
 import hello.itemservice.repository.jpa.JpaItemRepositoryV3;
 import hello.itemservice.service.ItemService;
 import hello.itemservice.service.ItemServiceV1;
@@ -13,7 +12,7 @@ import javax.persistence.EntityManager;
 
 @Configuration
 @RequiredArgsConstructor
-public class QuerydslConfig {
+public class QuerydslV1Config {
 
     private final EntityManager em;
 

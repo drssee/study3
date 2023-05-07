@@ -1,41 +1,29 @@
 package hello.itemservice.domain;
 
-import hello.itemservice.repository.ItemRepository;
 import hello.itemservice.repository.ItemSearchCond;
 import hello.itemservice.repository.ItemUpdateDto;
-import hello.itemservice.repository.memory.MemoryItemRepository;
+import hello.itemservice.repository.v2.ItemQueryRepositoryV2;
+import hello.itemservice.repository.v2.ItemRepositoryV2;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Commit;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @SpringBootTest
 @Slf4j
-class ItemRepositoryTest {
-
-    //DataSource와 tx관련 빈들은 스프링부트가 자동으로 등록해줌
-    @Autowired
-    PlatformTransactionManager transactionManager;
-
-    TransactionStatus status;
+class ItemRepositoryV2Test {
 
     @Autowired
-    ItemRepository itemRepository;
+    ItemRepositoryV2 itemRepository;
+
+    @Autowired
+    ItemQueryRepositoryV2 itemQueryRepository;
 
     @Test
     void save() {
@@ -61,13 +49,32 @@ class ItemRepositoryTest {
 
         //when
         ItemUpdateDto updateParam = new ItemUpdateDto("item2", 20000, 30);
-        itemRepository.update(itemId, updateParam);
+        Item findItem1 = itemRepository.findById(itemId).orElseThrow();
+
+
+
+        findItem1.setItemName(updateParam.getItemName());
+        findItem1.setPrice(updateParam.getPrice());
+        findItem1.setQuantity(updateParam.getQuantity());
+
+        /*
+        if 테스트 트렌젝션이 해당 메소드 영역에 안결려있을시
+        아래의 save가 없다면 영속성 컨텍스트에서 가져온 findItem1을 변경해봐야,
+        변경된 내용을 db에 쿼리로 전달하는 커밋이 없기 때문에, 변경내용이 반영되지 않는다
+
+        하지만, 해당 메소드 영역에 트랜잭션이 걸려있다면 한 트랜잭션내에서 동작하기 때문에 영속성 컨텍스트 내부에서
+        해당 작업이 메소드 끝까지 이뤄진후 결과물을 커밋하기 때문에
+        아래의 save가 없어도 된다(좀더 테스트 해봐야함)
+         */
+//        itemRepository.save(findItem1);
+
+
 
         //then
-        Item findItem = itemRepository.findById(itemId).get();
-        assertThat(findItem.getItemName()).isEqualTo(updateParam.getItemName());
-        assertThat(findItem.getPrice()).isEqualTo(updateParam.getPrice());
-        assertThat(findItem.getQuantity()).isEqualTo(updateParam.getQuantity());
+        Item findItem2 = itemRepository.findById(itemId).get();
+        assertThat(findItem2.getItemName()).isEqualTo(updateParam.getItemName());
+        assertThat(findItem2.getPrice()).isEqualTo(updateParam.getPrice());
+        assertThat(findItem2.getQuantity()).isEqualTo(updateParam.getQuantity());
     }
 
     @Test
@@ -98,7 +105,7 @@ class ItemRepositoryTest {
     }
 
     void test(String itemName, Integer maxPrice, Item... items) {
-        List<Item> result = itemRepository.findAll(new ItemSearchCond(itemName, maxPrice));
+        List<Item> result = itemQueryRepository.findAll(new ItemSearchCond(itemName, maxPrice));
         assertThat(result).containsExactly(items);
     }
 
